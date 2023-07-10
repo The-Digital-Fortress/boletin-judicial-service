@@ -4,18 +4,36 @@ const indexRouter = require('./index');
 const request = require('supertest');
 const XlsxPopulate = require('xlsx-populate');
 
+const {
+  jsonResponse,
+} = require('../utils/json-response');
+const e = require('express');
+
 app.use('/', indexRouter);
 
 test('healthcheck should return OK', async () => {
   const response = await request(app).get('/healthcheck');
+  const expected = new jsonResponse(
+    true,
+    {},
+    'OK',
+    []
+    );
   expect(response.status).toBe(200);
-  expect(response.text).toBe({ message: 'OK' });
+  expect(response.body).toMatchObject(expected);
 });
 
 test('index should return Express', async () => {
   const response = await request(app).get('/');
+  const expected = new jsonResponse(
+    true,
+    {},
+    'Welcome to express',
+    []
+    );
+
   expect(response.status).toBe(200);
-  expect(response.body.title).toBe('welcome to Express');
+  expect(response.body).toMatchObject(expected);
 });
 
 test('file upload should return a json object', async () => {
@@ -45,20 +63,31 @@ test('file upload should return a json object', async () => {
 
   const response = await request(app).post('/file').attach('xlsxFile', fileBuffer, 'test.xlsx');
   expect(response.status).toBe(200);
-  expect(response.body).toEqual(
-    [
-      [ '1civil', '01111/2023' ],
-      [ '2civil', '02222/2023' ],
-      [ '3civil', '03333/2023' ],
-      [ '4civil', '04444/2023' ],
-      [ '', '09999/2023' ]
-    ]
-  );
+  const expected = new jsonResponse(
+    true,
+    {
+      zeroPaddedColumns: [
+        [ '1civil', '01111/2023' ],
+        [ '2civil', '02222/2023' ],
+        [ '3civil', '03333/2023' ],
+        [ '4civil', '04444/2023' ],
+        [ '', '09999/2023' ]
+      ]
+    },
+    'File uploaded successfully',
+    []
+    );
+  expect(response.body).toMatchObject(expected);
 });
 
 test('file upload should return error if file is not xlsx', async () => {
   const response = await request(app).post('/file');
+  
+  const expected = new jsonResponse(
+    false,
+    {},
+    'Error uploading file',
+    ["Cannot read properties of undefined (reading 'buffer')"]
+    );
   expect(response.status).toBe(400);
-  expect(response.body).toInclude({ message: 'Error uploading file' });
-  // expect(response.body).toEqual({ error: 'File is not xlsx' });
-});
+  expect(response.body).toMatchObject(expected)});
