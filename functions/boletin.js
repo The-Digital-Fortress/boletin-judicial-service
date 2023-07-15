@@ -1,5 +1,6 @@
 const moment = require('moment-timezone');
 const jsdom = require('jsdom');
+const e = require('express');
 const tabletojson = require('tabletojson').Tabletojson;
 
 function formatDate(date) {
@@ -12,12 +13,12 @@ function formatDate(date) {
   return { datetime, year, formattedDate };
 }
 
-function createURL( {datetime, year, formattedDate} , municipality) {
+function createURL({ datetime, year, formattedDate }, municipality) {
   return `http://www.pjbc.gob.mx/boletinj/${year}/my_html/${municipality}${formattedDate}.htm`;
 }
 
-async function getBoletinData( URL ) {
-  
+async function getBoletinData(URL) {
+
   try {
     const response = await fetch(URL);
     const html = await response.text();
@@ -26,10 +27,7 @@ async function getBoletinData( URL ) {
     const mainSection = dom.window.document.querySelector('.WordSection1');
 
     if (!mainSection) {
-      return {
-        status: 204,
-        data: { message: 'No hay informacion de este boletin' },
-      };
+      throw new Error('No main section found');
     }
 
     const juryCases = {};
@@ -54,21 +52,10 @@ async function getBoletinData( URL ) {
       };
     });
 
-    return {
-      status: 200,
-      files: flattenedJuryFilesObj,
-      datetime,
-      url: URL,
-    };
+    return flattenedJuryFilesObj;
+
   } catch (error) {
-    console.error(error);
-    return {
-      status: 500,
-      data: {
-        error: error.message,
-        datetime,
-      },
-    };
+    return error;
   }
 }
 

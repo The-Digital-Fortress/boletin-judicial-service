@@ -3,6 +3,7 @@ const app = express();
 const indexRouter = require('./index');
 const request = require('supertest');
 const XlsxPopulate = require('xlsx-populate');
+const dummyResponse = require('../utils/constants');
 
 const {
   jsonResponse,
@@ -10,6 +11,8 @@ const {
 const e = require('express');
 
 app.use('/', indexRouter);
+
+jest.mock('../functions/boletin');
 
 test('healthcheck should return OK', async () => {
   const response = await request(app).get('/healthcheck');
@@ -91,3 +94,49 @@ test('file upload should return error if file is not xlsx', async () => {
     );
   expect(response.status).toBe(400);
   expect(response.body).toMatchObject(expected)});
+
+  test('boletin should return a json object', async () => {
+    
+    // Mock the /boleting endpoint response from getBoletinData function
+    const formatDate = require('../functions/boletin').formatDate;
+    formatDate.mockReturnValue({ datetime: '2023/07/11 00:00:00', year: '2023', formattedDate: '230711' });
+    const createURL = require('../functions/boletin').createURL;
+    createURL.mockReturnValue('http://www.pjbc.gob.mx/boletinj/2023/my_html/ti230711.htm');
+    const getBoletinData = require('../functions/boletin').getBoletinData;
+    getBoletinData.mockResolvedValue([
+      {
+        "files": [
+          { "0": "1", "1": "00840/2012", "2": "-- CI BANCO SOCIEDAD ANONIMA, INSTITUCION DE BANCA MULTIPLE -- VS SECRETO. SUMARIO HIPOTECARIO" },
+          { "0": "2", "1": "00852/2013", "2": "HIPOTECARIA NACIONAL, SOCIEDAD ANONIMA DE CAPITAL VARIABLE, SOCIEDAD FINANCIERA DE OBJETO MÚLTIPLE, ENTIDAD REGULADA, GRUPO FINANCIERO BBVA BANCOMER VS SECRETO. SUMARIO HIPOTECARIO" }
+        ],
+        "key": "JUZGADO SEPTIMO CIVIL DE TIJUANA, B.C. 06 DE JULIO DE 2023"
+      }
+    ]);
+    
+    // request to /boletin with date query param
+    const response = await request(app).get('/boletin').query({date: '2023-07-11', city: 'ti'});
+
+    expect(response.status).toBe(200);
+    expect(typeof response.body.data).toBe('object');
+    expect(formatDate).toHaveBeenCalled();
+    expect(createURL).toHaveBeenCalled();
+    expect(getBoletinData).toHaveBeenCalled();
+    expect(getBoletinData).toHaveBeenCalledTimes(1);
+  });
+
+  test('boletin should return error if date query param is missing', async () => {
+    const response = await request(app).get('/boletin').query({city: 'ti'});
+    expect(response.status).toBe(400);
+    expect(response.body.errors).toEqual(["Missing query parameters"]);
+  });
+
+  test('boletin should throw error if getBoletinData fails', async () => {
+    const getBoletinData = require('../functions/boletin').getBoletinData;
+    const originalBoletinModule = jest.requireActual('../functions/boletin');
+    getBoletinData.mockImplementation(originalBoletinModule.getBoletinData);
+
+    const response = await request(app).get('/boletin').query({date: '2023-07-15', city: 'ti'});
+    console.log(response.body);
+    expect(response.status).toBe(400);
+    expect(response.body.errors).toEqual(["No main section found"]);
+  });
