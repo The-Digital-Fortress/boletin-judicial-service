@@ -1,3 +1,4 @@
+const cors = require('cors');
 const express = require('express');
 const multer = require('multer');
 const router = express.Router();
@@ -22,6 +23,7 @@ const {
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+express.use(cors());
 /* GET home page. */
 router.get('/', function(req, res, next) {
   const response = new jsonResponse(
