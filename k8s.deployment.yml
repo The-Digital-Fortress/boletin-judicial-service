@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boletin-deployment
+  labels:
+    app: boletin-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: boletin-app
+  template:
+    metadata:
+      labels:
+        app: boletin-app
+    spec:
+      containers:
+      - name: boletin-container
+        image: artmen/boletin-judicial-service:1.0.0
+        ports:
+        - containerPort: 3000
