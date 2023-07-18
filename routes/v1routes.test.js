@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const indexRouter = require('./index');
+const indexRouter = require('./v1routes');
 const request = require('supertest');
 const XlsxPopulate = require('xlsx-populate');
 const dummyResponse = require('../utils/constants');
@@ -17,7 +17,7 @@ jest.mock('../functions/boletin');
 test('healthcheck should return OK', async () => {
   const response = await request(app).get('/healthcheck');
   const expected = new jsonResponse(
-    true,
+    200,
     {},
     'OK',
     []
@@ -29,7 +29,7 @@ test('healthcheck should return OK', async () => {
 test('index should return Express', async () => {
   const response = await request(app).get('/');
   const expected = new jsonResponse(
-    true,
+    200,
     {},
     'Welcome to express',
     []
@@ -67,7 +67,7 @@ test('file upload should return a json object', async () => {
   const response = await request(app).post('/file').attach('xlsxFile', fileBuffer, 'test.xlsx');
   expect(response.status).toBe(200);
   const expected = new jsonResponse(
-    true,
+    200,
     {
       zeroPaddedColumns: [
         [ '1civil', '01111/2023' ],
@@ -87,7 +87,7 @@ test('file upload should return error if file is not xlsx', async () => {
   const response = await request(app).post('/file');
   
   const expected = new jsonResponse(
-    false,
+    400,
     {},
     'Error uploading file',
     ["Cannot read properties of undefined (reading 'buffer')"]

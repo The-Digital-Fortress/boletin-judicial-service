@@ -6,7 +6,7 @@ test('json response should have a predefined structure', async () => {
   const response = new jsonResponse();
 
   const expected = {
-    status: false,
+    status: 500,
     data: {},
     message: '',
     errors: [],
@@ -22,17 +22,19 @@ test('json response should have a predefined structure', async () => {
 
 test('json response should return a json object', async () => {
   const response = new jsonResponse(
-    true,
+    200,
     {},
     'OK',
-    []
+    [],
+    ""
     );
 
   const expected = {
-    status: true,
+    status: 200,
     data: {},
     message: 'OK',
     errors: [],
+    url: ""
   };
 
   // Assert that response is a json object

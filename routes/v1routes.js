@@ -25,7 +25,7 @@ const upload = multer({ storage: storage });
 /* GET home page. */
 router.get('/', function(req, res, next) {
   const response = new jsonResponse(
-    true,
+    200,
     {},
     'Welcome to express',
     []
@@ -36,7 +36,7 @@ router.get('/', function(req, res, next) {
 /* GET healthcheck. */
 router.get('/healthcheck', function(req, res, next) {
   const response = new jsonResponse(
-    true,
+    200,
     {},
     'OK',
     []
@@ -55,7 +55,7 @@ router.post('/file', upload.single('xlsxFile'), async function(req, res, next) {
     let zeroPaddedColumns = await addZeroPaddingToIds(filteredColumns);
 
     const response = new jsonResponse(
-      true,
+      200,
       {zeroPaddedColumns},
       'File uploaded successfully',
       []
@@ -65,7 +65,7 @@ router.post('/file', upload.single('xlsxFile'), async function(req, res, next) {
 
   } catch (error) {
     const response = new jsonResponse(
-      false,
+      400,
       {},
       'Error uploading file',
       [error.message]
@@ -93,17 +93,18 @@ router.get('/boletin', async function(req, res, next) {
     }
 
     const response = new jsonResponse(
-      true,
+      200,
       {boletinData},
       'Boletin data retrieved successfully',
-      []
+      [],
+      URL
       );
     
     res.send(response);
 
   } catch (error) {
     const response = new jsonResponse(
-      false,
+      400,
       {},
       'Error retrieving boletin data',
       [error.message]
