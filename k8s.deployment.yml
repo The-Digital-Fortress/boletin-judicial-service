@@ -5,7 +5,7 @@ metadata:
   labels:
     app: boletin-app
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: boletin-app
@@ -19,3 +19,4 @@ spec:
         image: artmen/boletin-judicial-service:1.0.0
         ports:
         - containerPort: 3000
+

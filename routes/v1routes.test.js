@@ -4,27 +4,12 @@ const indexRouter = require('./v1routes');
 const request = require('supertest');
 const XlsxPopulate = require('xlsx-populate');
 const dummyResponse = require('../utils/constants');
-
-const {
-  jsonResponse,
-} = require('../utils/json-response');
+const { jsonResponse } = require('../utils/json-response');
 const e = require('express');
 
 app.use('/', indexRouter);
 
 jest.mock('../functions/boletin');
-
-test('healthcheck should return OK', async () => {
-  const response = await request(app).get('/healthcheck');
-  const expected = new jsonResponse(
-    200,
-    {},
-    'OK',
-    []
-    );
-  expect(response.status).toBe(200);
-  expect(response.body).toMatchObject(expected);
-});
 
 test('index should return Express', async () => {
   const response = await request(app).get('/');
@@ -35,6 +20,18 @@ test('index should return Express', async () => {
     []
     );
 
+  expect(response.status).toBe(200);
+  expect(response.body).toMatchObject(expected);
+});
+
+test('healthcheck should return OK', async () => {
+  const response = await request(app).get('/healthcheck');
+  const expected = new jsonResponse(
+    200,
+    {},
+    'OK',
+    []
+    );
   expect(response.status).toBe(200);
   expect(response.body).toMatchObject(expected);
 });
