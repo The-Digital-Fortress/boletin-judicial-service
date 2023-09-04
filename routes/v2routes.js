@@ -1,8 +1,6 @@
-const db = require ('../utils/firebase/initializeFirebase');
-const { getAllRecords } = require('../utils/firebase/firestoreFunctions');
 const express = require('express');
 const router = express.Router();
-
+const { searchUserFiles } = require('../utils/userFiles/userFunctions');
 
 const {
   jsonResponse,
@@ -29,11 +27,28 @@ router.get('/healthcheck', function(req, res, next) {
   res.send(response);
 });
 
-router.get('/sync', async function(req, res, next) {
-  const users = await getAllRecords(db, 'users');
+
+
+router.post('/sync', async function(req, res, next) {
+  const userid = req.body.userid;
+
+  if(!userid){
+    const response = new jsonResponse(
+      400,
+      {},
+      'Missing userid',
+      []
+      );
+    res.status(400);
+    res.send(response);
+    return;
+  }
+
+  const foundFiles = await searchUserFiles(userid);
+
   const response = new jsonResponse(
     200,
-    {users},
+    {foundFiles},
     'OK',
     []
     );
